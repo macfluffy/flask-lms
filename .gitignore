@@ -1,4 +1,6 @@
 Initialized empty Git repository in /mnt/e/Documents/CoderAcademy/DEV1002-DWD-2025-JUN/Flask/flask-lms/echo/.git/
 .venv/
 .env
+.env.example
+.flaskenv
 __pycache__/
