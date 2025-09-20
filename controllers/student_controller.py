@@ -10,7 +10,7 @@ def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}
 
 def error_student_does_not_exist(student_id):
-    return {"message": f"Student with id {student_id} does not exist"}
+    return {"message": f"Student with id {student_id} does not exist"}, 404
 
 # Routes to be defined
 # GET /
@@ -67,26 +67,26 @@ def create_student():
         acknowledgement = student_schema.dump(newStudent)
         return jsonify(acknowledgement), 201
     except IntegrityError as err:
-            # if int(err.orig.pgcode) == 23502: # not null violation
-            if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
-                return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
-            
-            if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-                return {"message": err.orig.diag.message_detail}, 409
-            
-            else:
-                return  {"message": "Integrity Error occured."}, 409
-        except:
-            return {"message": "Unexpected error occured."}
+        # if int(err.orig.pgcode) == 23502: # not null violation
+        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
+            return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
+        
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+            return {"message": err.orig.diag.message_detail}, 409
+        
+        else:
+            return  {"message": "Integrity Error occured."}, 409
+    except:
+        return {"message": "Unexpected error occured."}
 
 # DELETE /id
 @student_bp.route("/<int:student_id>", methods = ["DELETE"])
 def delete_student(student_id):
-     # find the student with id
-     stmt = db.select(Student).where(student.student_id == student_id)
-     student = db.session.scalar(stmt)
-     # if student exists
-     if student:
+    # find the student with id
+    stmt = db.select(Student).where(student.student_id == student_id)
+    student = db.session.scalar(stmt)
+    # if student exists
+    if student:
         # delete
         db.session.delete(student)
         # commit
@@ -99,3 +99,30 @@ def delete_student(student_id):
         return {"message": f"Student with id: {student_id} does not exist."}, 404
 
 # PUT/PATCH /id
+@student_bp.route("/<int:student_id>", methods = ["PUT", "PATCH"])
+def update_student(student_id):
+    try:
+        # Get the student from the database
+        # define the stmt
+        stmt = db.select(Student).where(Student.student_id == student_id)
+        # execute the statement
+        student = db.session.scalar(stmt)
+        # if the student exists
+        if student:
+            # fetch the info from the request body
+            bodyData = request.get_json()
+            # make the changes, short circuit method
+            student.name = bodyData.get("name", student.name)
+            student.email = bodyData.get("email", student.email)
+            student.address = bodyData.get("address", student.address)
+            # commit to the db
+            db.session.commit()
+            # ack
+            return jsonify(student_schema(student))
+        # else
+        else:
+            # ack message
+            return error_student_does_not_exist(student_id)
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+            return {"message": err.orig.diag.message_detail}, 409
