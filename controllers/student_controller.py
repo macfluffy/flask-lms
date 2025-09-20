@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify
 from init import db
 from models.student import Student, student_schema, students_schema
+from sqlalchemy.exc import IntegrityError
+from psycopg2 import errorcodes
 
 student_bp = Blueprint("students", __name__, url_prefix = "/students")
 
@@ -39,5 +41,61 @@ def get_a_student(student_id):
         return error_student_does_not_exist(student_id)
 
 # POST /
-# PUT/PATCH /id
+@student_bp.route("/", methods = ["POST"])
+def create_student():
+    try:
+        # GET details from the REQUEST body
+        bodyData = request.get_json()
+        # email = bodyData.get("email")
+        # stmt = db.select(Student).where(Student.email == email)
+        # student = db.session.scalar(stmt)
+        # data = student_schema.dump(student)
+        # if data:
+            # return {"message": f"The Student with email:{email} already exists."}, 409
+        
+        # Create a student object with the request body data
+        newStudent = Student(
+            name = bodyData.get("name"),
+            email = bodyData.get("email"),
+            address = bodyData.get("address")
+        )
+        # Add to the session
+        db.session.add(newStudent)
+        # Commit the session
+        db.session.commit()
+        # Send acknowledgement
+        acknowledgement = student_schema.dump(newStudent)
+        return jsonify(acknowledgement), 201
+    except IntegrityError as err:
+            # if int(err.orig.pgcode) == 23502: # not null violation
+            if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
+                return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
+            
+            if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+                return {"message": err.orig.diag.message_detail}, 409
+            
+            else:
+                return  {"message": "Integrity Error occured."}, 409
+        except:
+            return {"message": "Unexpected error occured."}
+
 # DELETE /id
+@student_bp.route("/<int:student_id>", methods = ["DELETE"])
+def delete_student(student_id):
+     # find the student with id
+     stmt = db.select(Student).where(student.student_id == student_id)
+     student = db.session.scalar(stmt)
+     # if student exists
+     if student:
+        # delete
+        db.session.delete(student)
+        # commit
+        db.session.commit()
+        # return ack
+        return {"message": f"Student {student.name} deleted successfully."}, 200 
+    # else
+    else:
+        # return ack
+        return {"message": f"Student with id: {student_id} does not exist."}, 404
+
+# PUT/PATCH /id
