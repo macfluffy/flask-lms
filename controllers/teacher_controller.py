@@ -85,6 +85,34 @@ def get_a_teacher(teacher_id):
         return error_teacher_does_not_exist(teacher_id)
 
 # UPDATE - PUT/PATCH /id
+@teachers_bp.route("/<int:teacher_id>", methods = ["PUT", "PATCH"])
+def update_teacher(teacher_id):
+    try:
+        # Get the teacher from the database
+        # define the stmt
+        stmt = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
+        # execute the statement
+        teacher = db.session.scalar(stmt)
+        # if the teacher exists
+        if teacher:
+            # fetch the info from the request body
+            bodyData = request.get_json()
+            # make the changes, short circuit method
+            teacher.name = bodyData.get("name", teacher.name)
+            teacher.department = bodyData.get("department", teacher.department)
+            teacher.address = bodyData.get("address", teacher.address)
+            # commit to the db
+            db.session.commit()
+            # ack
+            return jsonify(teacher_schema.dump(teacher))
+        # else
+        else:
+            # ack message
+            return error_teacher_does_not_exist(teacher_id)
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+            return {"message": err.orig.diag.message_detail}, 409
+        
 # DELETE - DELETE /id
 @teachers_bp.route("/<int:teacher_id>", methods = ["DELETE"])
 def delete_teacher(teacher_id):

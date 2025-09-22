@@ -118,7 +118,7 @@ def update_student(student_id):
             # commit to the db
             db.session.commit()
             # ack
-            return jsonify(student_schema(student))
+            return jsonify(student_schema.dump(student))
         # else
         else:
             # ack message
