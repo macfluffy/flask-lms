@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from init import db
 from models.student import Student, student_schema, students_schema
 from sqlalchemy.exc import IntegrityError
@@ -83,7 +83,7 @@ def create_student():
 @student_bp.route("/<int:student_id>", methods = ["DELETE"])
 def delete_student(student_id):
     # find the student with id
-    stmt = db.select(Student).where(student.student_id == student_id)
+    stmt = db.select(Student).where(Student.student_id == student_id)
     student = db.session.scalar(stmt)
     # if student exists
     if student:
