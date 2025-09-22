@@ -86,3 +86,20 @@ def get_a_teacher(teacher_id):
 
 # UPDATE - PUT/PATCH /id
 # DELETE - DELETE /id
+@teachers_bp.route("/<int:teacher_id>", methods = ["DELETE"])
+def delete_teacher(teacher_id):
+    # find the teacher with id
+    stmt = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
+    teacher = db.session.scalar(stmt)
+    # if teacher exists
+    if teacher:
+        # delete
+        db.session.delete(teacher)
+        # commit
+        db.session.commit()
+        # return ack
+        return {"message": f"Teacher {teacher.name} deleted successfully."}, 200 
+    # else
+    else:
+        # return ack
+        return {"message": f"Teacher with id: {teacher_id} does not exist."}, 404
