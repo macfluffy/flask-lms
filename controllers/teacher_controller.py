@@ -60,9 +60,10 @@ def get_teachers():
     if department:
         # Define the statement for GET ALL teacher: select * from teachers where department = something;
         stmt = db.select(Teacher).where(Teacher.department == department)
+    else:    
+        # Define the statement for GET ALL teachers: SELECT * FROM teachers;
+        stmt = db.Select(Teacher)
         
-    # Define the statement for GET ALL teachers: SELECT * FROM teachers;
-    stmt = db.Select(Teacher)
     # Execute it
     teachers_list = db.session.scalars(stmt)
     queryData = teachers_schema.dump(teachers_list)
