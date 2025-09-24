@@ -54,6 +54,13 @@ def create_teacher():
 # READ - GET / AND /id
 @teachers_bp.route("/")
 def get_teachers():
+    #Get the department name from the URL
+    department = request.args.get("department")
+
+    if department:
+        # Define the statement for GET ALL teacher: select * from teachers where department = something;
+        stmt = db.select(Teacher).where(Teacher.department == department)
+        
     # Define the statement for GET ALL teachers: SELECT * FROM teachers;
     stmt = db.Select(Teacher)
     # Execute it
