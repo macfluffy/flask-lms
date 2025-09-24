@@ -1,5 +1,4 @@
 from init import db
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
 class Teacher(db.Model):
     __tablename__ = "teachers"
@@ -9,10 +8,4 @@ class Teacher(db.Model):
     department = db.Column(db.String(100), nullable = False)
     address = db.Column(db.String(100))
 
-class TeacherSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Teacher
-        load_instance = True
-
-teacher_schema = TeacherSchema()
-teachers_schema = TeacherSchema(many = True)
+    courses = db.relationship("Course", back_populates = "teacher", cascade = "all, delete")

@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify, request
-from init import db
-from models.teacher import Teacher, teacher_schema, teachers_schema
 from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
+
+from init import db
+from models.teacher import Teacher
+from schemas.schemas import teacher_schema, teachers_schema
 
 teachers_bp = Blueprint("teachers", __name__, url_prefix = "/teachers")
 
@@ -63,7 +65,7 @@ def get_teachers():
     else:    
         # Define the statement for GET ALL teachers: SELECT * FROM teachers;
         stmt = db.Select(Teacher)
-        
+
     # Execute it
     teachers_list = db.session.scalars(stmt)
     queryData = teachers_schema.dump(teachers_list)
