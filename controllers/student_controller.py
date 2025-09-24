@@ -4,7 +4,7 @@ from models.student import Student, student_schema, students_schema
 from sqlalchemy.exc import IntegrityError
 from psycopg2 import errorcodes
 
-student_bp = Blueprint("students", __name__, url_prefix = "/students")
+students_bp = Blueprint("students", __name__, url_prefix = "/students")
 
 def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}
@@ -14,7 +14,7 @@ def error_student_does_not_exist(student_id):
 
 # Routes to be defined
 # GET /
-@student_bp.route("/")
+@students_bp.route("/")
 def get_students():
     # Define a statement: SELECT * FROM students;
     stmt = db.select(Student)
@@ -30,7 +30,7 @@ def get_students():
         return error_empty_table()
 
 # GET /id
-@student_bp.route("/<int:student_id>")
+@students_bp.route("/<int:student_id>")
 def get_a_student(student_id):
     stmt = db.select(Student).where(student.student_id == student_id)
     student = db.session.scalar(stmt)
@@ -41,7 +41,7 @@ def get_a_student(student_id):
         return error_student_does_not_exist(student_id)
 
 # POST /
-@student_bp.route("/", methods = ["POST"])
+@students_bp.route("/", methods = ["POST"])
 def create_student():
     try:
         # GET details from the REQUEST body
@@ -80,7 +80,7 @@ def create_student():
         return {"message": "Unexpected error occured."}
 
 # DELETE /id
-@student_bp.route("/<int:student_id>", methods = ["DELETE"])
+@students_bp.route("/<int:student_id>", methods = ["DELETE"])
 def delete_student(student_id):
     # find the student with id
     stmt = db.select(Student).where(Student.student_id == student_id)
@@ -99,7 +99,7 @@ def delete_student(student_id):
         return {"message": f"Student with id: {student_id} does not exist."}, 404
 
 # PUT/PATCH /id
-@student_bp.route("/<int:student_id>", methods = ["PUT", "PATCH"])
+@students_bp.route("/<int:student_id>", methods = ["PUT", "PATCH"])
 def update_student(student_id):
     try:
         # Get the student from the database
