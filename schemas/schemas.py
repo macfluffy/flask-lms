@@ -17,6 +17,8 @@ class TeacherSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Teacher
         load_instance = True
+        # Define the exact order of keys
+        fields = ("teacher_id", "name", "department", "courses", "address")
 
     # Exclude teachers to prevent recursion, the comma at the end is to denote a tuple
     courses = fields.List(fields.Nested("CourseSchema", exclude = ("teacher", "teacher_id")))
@@ -29,6 +31,8 @@ class CourseSchema(SQLAlchemyAutoSchema):
         model = Course
         load_instance = True
         include_fk = True
+        # Define the exact order of keys
+        fields = ("course_id", "name", "duration", "teacher", "teacher_id")
 
     teacher = fields.Nested("TeacherSchema", dump_only = True, only = ("teacher_id", "name", "department"))
 
