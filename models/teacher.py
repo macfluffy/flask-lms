@@ -8,4 +8,4 @@ class Teacher(db.Model):
     department = db.Column(db.String(100), nullable = False)
     address = db.Column(db.String(100))
 
-    courses = db.relationship("Course", back_populates = "teacher", cascade = "all, delete")
+    courses = db.relationship("Course", back_populates = "teacher", cascade = "all, delete-orphan")

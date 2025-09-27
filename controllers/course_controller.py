@@ -111,3 +111,40 @@ def delete_course(course_id):
         return error_course_does_not_exist(course_id)
     
 # UPDATE - PUT/PATCH /course_id
+courses_bp.route("/<int:course_id", methods = ["PUT", "PATCH"])
+def update_a_course(course_id):
+    try:
+        # Find the course from the db
+        stmt = db.select(Course).where(Course.course_id == course_id)
+        course = db.session.scalar(stmt)
+        queryData = course_schema.dump(course)
+        # if it exists:
+        if queryData:
+            # get the data to update from the request body
+            bodyData = request.get_json()
+            # make the changes
+            course.name = bodyData.get("name", course.name)
+            course.duration = bodyData.get("duration", course.duration)
+            course.teacher_id = bodyData.get("teacher_id", course.teacher_id)
+            # commit
+            db.session.commit()
+            # return response
+            return jsonify(course_schema.dump(course))
+        # else
+        else:
+            # acknowledge
+            return error_course_does_not_exist(course_id)
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+            return {"message": err.orig.diag.message_detail}, 409
+        
+        if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
+            return {"message": "Invalid teacher selected."}, 409
+        
+        else:
+            return  {"message": "Integrity Error occured."}, 409
+    except DataError as err:
+        return {"message": err.orig.pgcode == errorcodes.orig.diag.message_detail}, 409
+    except:
+        return {"message": "Unexpected error occured."}, 400
+    
