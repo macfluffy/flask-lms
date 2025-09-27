@@ -14,6 +14,9 @@ def error_empty_table():
 def error_course_does_not_exist(course_id):
     return {"message": f"Course with id {course_id} does not exist"}, 404
 
+def course_sucessfully_delete(course_name):
+    return {"message": f"Course {course_name} deleted successfully."}, 200 
+
 # READ - GET /
 @courses_bp.route("/")
 def get_courses():
@@ -78,7 +81,7 @@ def create_course():
             return {"message": err.orig.diag.message_detail}, 409
         
         if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-            return {"message": err.orig.diag.message_detail}, 409
+            return {"message": "Invalid teacher selected."}, 409
         
         else:
             return  {"message": "Integrity Error occured."}, 409
@@ -86,4 +89,25 @@ def create_course():
         return {"message": "Unexpected error occured."}, 400
 
 # DELETE a course - DELETE /course_id
+@courses_bp.route("/<int:course_id>", methods = ["DELETE"])
+def delete_course(course_id):
+    # Find the course
+    # define the statement
+    stmt = db.select(Course).where(Course.course_id == course_id)
+    # stmt = db.select(Course).filter_by(course_id = course_id)
+    # execute it
+    course = db.session.scalar(stmt)
+    queryData = course_schema.dump(course)
+    # If the course exists
+    if queryData:
+        # delete it
+        db.session.delete(course)
+        db.session.commit()
+        # return message
+        return course_sucessfully_delete(course.name)
+    # else
+    else:
+        # acknowledge
+        return error_course_does_not_exist(course_id)
+    
 # UPDATE - PUT/PATCH /course_id
