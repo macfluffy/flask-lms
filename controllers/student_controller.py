@@ -79,7 +79,7 @@ def create_student():
         else:
             return  {"message": "Integrity Error occured."}, 409
     except:
-        return {"message": "Unexpected error occured."}
+        return {"message": "Unexpected error occured."}, 400
 
 # DELETE /id
 @students_bp.route("/<int:student_id>", methods = ["DELETE"])

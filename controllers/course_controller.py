@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
-from init import db
+from sqlalchemy.exc import IntegrityError
+from psycopg2 import errorcodes
 
+from init import db
 from models.course import Course
 from schemas.schemas import course_schema, courses_schema
 
@@ -50,5 +52,38 @@ def get_a_course(course_id):
         return error_course_does_not_exist(course_id)
     
 # CREATE - POST /
+@courses_bp.route("/", methods = ["POST"])
+def create_course():
+    try:
+        # Get the data from the Request Body
+        bodyData = request.get_json()
+        # Create a course instance
+        newCourse = Course(
+            name = bodyData.get("name"),
+            duration = bodyData.get("duration"),
+            teacher_id = bodyData.get("teacher_id")
+        )
+        # Add to the session
+        db.session.add(newCourse)
+        # commit it
+        db.session.commit()
+        # return the response
+        return jsonify(course_schema.dump(newCourse)), 201
+    except IntegrityError as err:
+        # if int(err.orig.pgcode) == 23502: # not null violation
+        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
+            return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
+        
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+            return {"message": err.orig.diag.message_detail}, 409
+        
+        if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
+            return {"message": err.orig.diag.message_detail}, 409
+        
+        else:
+            return  {"message": "Integrity Error occured."}, 409
+    except:
+        return {"message": "Unexpected error occured."}, 400
+
 # DELETE a course - DELETE /course_id
 # UPDATE - PUT/PATCH /course_id
