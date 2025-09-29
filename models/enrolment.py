@@ -4,6 +4,10 @@ from init import db
 
 class Enrolment(db.Model):
     __tablename__ = "enrolments"
+    __table_args__ = (
+        db.UniqueConstraint("student_id", "course_id", name = "enrolments_unique_student_course"),
+    )
+
     id = db.Column(db.Integer, primary_key = True)
     enrolment_date = db.Column(db.Date, default = date.today)
     student_id = db.Column(db.Integer, db.ForeignKey("students.student_id"), nullable = False)
