@@ -10,6 +10,7 @@ class StudentSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Student
         load_instance = True
+        fields = ("student_id", "name", "email", "enrolments", "address")
 
     enrolments = fields.List(fields.Nested("EnrolmentSchema", exclude = ("student",)))
 
