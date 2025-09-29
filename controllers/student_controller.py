@@ -34,7 +34,7 @@ def get_students():
 # GET /id
 @students_bp.route("/<int:student_id>")
 def get_a_student(student_id):
-    stmt = db.select(Student).where(student.student_id == student_id)
+    stmt = db.select(Student).where(Student.student_id == student_id)
     student = db.session.scalar(stmt)
     queryData = student_schema.dump(student)
     if queryData:
