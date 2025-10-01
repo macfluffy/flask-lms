@@ -11,6 +11,12 @@ enrolments_bp = Blueprint("enrolments", __name__, url_prefix = "/enrolments")
 def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}, 404
 
+def error_enrolment_does_not_exist(enrolment_id):
+    return {"message": f"Enrolment with id {enrolment_id} does not exist"}, 404
+
+def enrolment_sucessfully_delete(enrolment_id):
+    return {"message": f"Enrolment {enrolment_id} deleted successfully."}, 200 
+
 # Read all
 @enrolments_bp.route("/")
 def get_enrolments():
@@ -19,7 +25,7 @@ def get_enrolments():
     stmt = db.select(Enrolment)
     
     if enrolment_id:
-        stmt = stmt.where(Enrolment.enrolment_id == enrolment_id)
+        stmt = stmt.where(Enrolment.id == enrolment_id)
     
     if student_id:
         stmt = stmt.where(Enrolment.student_id == student_id)
@@ -64,3 +70,25 @@ def create_enrolment():
             return  {"message": "Integrity Error occured."}, 409
     except:
         return {"message": "Unexpected error occured."}, 400
+    
+# DELETE a enrolment - DELETE /enrolment_id
+@enrolments_bp.route("/<int:enrolment_id>", methods = ["DELETE"])
+def delete_enrolment(enrolment_id):
+    # Find the enrolment
+    # define the statement
+    stmt = db.select(Enrolment).where(Enrolment.id == enrolment_id)
+    # stmt = db.select(Enrolment).filter_by(enrolment_id = enrolment_id)
+    # execute it
+    enrolment = db.session.scalar(stmt)
+    queryData = enrolment_schema.dump(enrolment)
+    # If the enrolment exists
+    if queryData:
+        # delete it
+        db.session.delete(enrolment)
+        db.session.commit()
+        # return message
+        return enrolment_sucessfully_delete(enrolment_id)
+    # else
+    else:
+        # acknowledge
+        return error_enrolment_does_not_exist(enrolment_id)
