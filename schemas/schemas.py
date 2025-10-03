@@ -5,7 +5,7 @@ their constraints, and the relationships between each of these tables.
 
 # Installed import packages
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-from marshmallow.validate import Length, Regexp, Range
+from marshmallow.validate import Length, Regexp, Range, OneOf
 from marshmallow import fields
 
 # Local imports - Tables
@@ -37,6 +37,12 @@ class TeacherSchema(SQLAlchemyAutoSchema):
         # Define the exact order of how the JSON query is displayed
         fields = ("teacher_id", "name", "department", "courses", "address")
 
+    # The valid department values: Science, Management, Engineering
+    department = auto_field(validate = OneOf(
+        ["Science", "Management", "Engineering"], 
+        error = "Only valid departments are: Science, Management, and Engineering."
+        )
+    )
     # Exclude teachers to prevent reference recursion when displaying the course information
     courses = fields.List(fields.Nested("CourseSchema", exclude = ("teacher", "teacher_id")))
 
@@ -50,7 +56,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
         # Define the exact order of how the JSON query is displayed
-        fields = ("course_id", "name", "duration", "teacher", "enrolments")
+        fields = ("course_id", "name", "duration", "teacher", "teacher_id", "enrolments")
 
     # name: cannot be blank, starts with letter, allows letters/numbers/spaces
     name = auto_field(validate = [

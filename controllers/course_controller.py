@@ -60,19 +60,29 @@ def get_a_course(course_id):
 def create_course():
     try:
         # Get the data from the Request Body
-        bodyData = request.get_json()
-        # Create a course instance
-        newCourse = Course(
-            name = bodyData.get("name"),
-            duration = bodyData.get("duration"),
-            teacher_id = bodyData.get("teacher_id")
+        # bodyData = request.get_json()
+        # # Create a course instance
+        # newCourse = Course(
+        #     name = bodyData.get("name"),
+        #     duration = bodyData.get("duration"),
+        #     teacher_id = bodyData.get("teacher_id")
+        # )
+        # # Add to the session
+        # db.session.add(newCourse)
+        
+        # schema.dump approach
+        # Use the Marshmallow to validate + create the course
+        newCourse = course_schema.load(
+            request.get_json(),
+            session = db.session
         )
-        # Add to the session
         db.session.add(newCourse)
         # commit it
         db.session.commit()
         # return the response
         return jsonify(course_schema.dump(newCourse)), 201
+    except ValidationError as err:
+        return err.messages, 400
     except IntegrityError as err:
         # if int(err.orig.pgcode) == 23502: # not null violation
         if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation

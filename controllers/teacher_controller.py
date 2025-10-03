@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
+from marshmallow import ValidationError
 from psycopg2 import errorcodes
 
 from init import db
@@ -28,18 +29,27 @@ def create_teacher():
             # return {"message": f"The Teacher with department:{department} already exists."}, 409
         
         # Create a teacher object with the request body data
-        newTeacher = Teacher(
-            name = bodyData.get("name"),
-            department = bodyData.get("department"),
-            address = bodyData.get("address")
+        # newTeacher = Teacher(
+        #     name = bodyData.get("name"),
+        #     department = bodyData.get("department"),
+        #     address = bodyData.get("address")
+        # )
+        # schema.load() method to create the new teacher with validation rules implemented
+        newTeacher = teacher_schema.load(
+            bodyData,
+            session = db.session
         )
+
         # Add to the session
+
         db.session.add(newTeacher)
         # Commit the session
         db.session.commit()
         # Send acknowledgement
         acknowledgement = teacher_schema.dump(newTeacher)
         return jsonify(acknowledgement), 201
+    except ValidationError as err:
+        return err.messages, 400
     except IntegrityError as err:
         # if int(err.orig.pgcode) == 23502: # not null violation
         if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
