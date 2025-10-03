@@ -1,8 +1,9 @@
-# Flask LMS API
-A simple REST API for managing students, teachers, and courses.
+# Flask LMS
+Flask LMS is a RESTful API designed for accessing and maintaining course, student, and teacher data for educational institutions.
+The API is structured to present information in a way that is most relevant to teachers and administrators.
 
 ## Overview
-Flask LMS API is a coursework/demo project that demonstrates a simple CRUD backend built with Flask, PostgreSQL, SQLAlchemy, and Marshmallow. It is intended for learning and documentation practice rather than production use. The project shows how to structure a Flask service with blueprints, schemas, and CLI tooling so you can explore how a Python web API wires together end-to-end.
+Flask LMS is a RESTful service that provides a clean CRUD backend for managing students, teachers, and courses in an educational setting. It uses Flask blueprints, SQLAlchemy models, and Marshmallow schemas to deliver a modular, maintainable API surface. The system follows industry conventions for clarity, ease of setup, and extensibility.
 
 ## Quick Setup
 All commands below are copy-paste ready. Replace placeholder values such as `your-username` or passwords as needed.
@@ -72,6 +73,10 @@ The API defaults to `http://127.0.0.1:5000/`.
 
 ## API Reference
 Base URL: `http://localhost:5000`
+Endpoints include:
+- `/students`
+- `/teachers`
+- `/courses`
 
 
 ## Steps to run the API
