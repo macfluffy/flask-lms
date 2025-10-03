@@ -1,3 +1,8 @@
+"""
+
+"""
+
+# Local imports
 from init import db
 
 class Course(db.Model):
