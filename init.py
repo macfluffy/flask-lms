@@ -1,3 +1,8 @@
+"""
+Add a layer between our database and application through the use of an Object Relational Mapper.
+This lets us map our Python objects with our SQL database.
+"""
+
 # External libraries
 from flask_sqlalchemy import SQLAlchemy
 
