@@ -58,46 +58,60 @@ def get_a_course(course_id):
 # CREATE - POST /
 @courses_bp.route("/", methods = ["POST"])
 def create_course():
-    try:
-        # Get the data from the Request Body
-        # bodyData = request.get_json()
-        # # Create a course instance
-        # newCourse = Course(
-        #     name = bodyData.get("name"),
-        #     duration = bodyData.get("duration"),
-        #     teacher_id = bodyData.get("teacher_id")
-        # )
-        # # Add to the session
-        # db.session.add(newCourse)
+    # try:
+    #     # Get the data from the Request Body
+    #     # bodyData = request.get_json()
+    #     # # Create a course instance
+    #     # newCourse = Course(
+    #     #     name = bodyData.get("name"),
+    #     #     duration = bodyData.get("duration"),
+    #     #     teacher_id = bodyData.get("teacher_id")
+    #     # )
+    #     # # Add to the session
+    #     # db.session.add(newCourse)
         
-        # schema.dump approach
-        # Use the Marshmallow to validate + create the course
-        newCourse = course_schema.load(
-            request.get_json(),
-            session = db.session
-        )
-        db.session.add(newCourse)
-        # commit it
-        db.session.commit()
-        # return the response
-        return jsonify(course_schema.dump(newCourse)), 201
-    except ValidationError as err:
-        return err.messages, 400
-    except IntegrityError as err:
-        # if int(err.orig.pgcode) == 23502: # not null violation
-        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
-            return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
+    #     # schema.dump approach
+    #     # Use the Marshmallow to validate + create the course
+    #     newCourse = course_schema.load(
+    #         request.get_json(),
+    #         session = db.session
+    #     )
+    #     db.session.add(newCourse)
+    #     # commit it
+    #     db.session.commit()
+    #     # return the response
+    #     return jsonify(course_schema.dump(newCourse)), 201
+    # except ValidationError as err:
+    #     return err.messages, 400
+    # except IntegrityError as err:
+    #     # if int(err.orig.pgcode) == 23502: # not null violation
+    #     if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
+    #         return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
         
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-            return {"message": err.orig.diag.message_detail}, 409
+    #     if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
+    #         return {"message": err.orig.diag.message_detail}, 409
         
-        if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-            return {"message": "Invalid teacher selected."}, 409
+    #     if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
+    #         return {"message": "Invalid teacher selected."}, 409
         
-        else:
-            return  {"message": "Integrity Error occured."}, 409
-    except:
-        return {"message": "Unexpected error occured."}, 400
+    #     else:
+    #         return  {"message": "Integrity Error occured."}, 409
+    # except:
+    #     return {"message": "Unexpected error occured."}, 400
+    # Implement Global Error Handlers
+    # Get the request body data values
+    bodyData = request.get_json()
+    # Validate and create a course
+    newCourse = course_schema.load(
+        bodyData,
+        session = db.session
+    )
+    # Add to session
+    db.session.add(newCourse)
+    # commit it
+    db.session.commit()
+    # return the response
+    return jsonify(course_schema.dump(newCourse)), 201
 
 # DELETE a course - DELETE /course_id
 @courses_bp.route("/<int:course_id>", methods = ["DELETE"])

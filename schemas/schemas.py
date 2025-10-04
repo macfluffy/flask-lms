@@ -56,7 +56,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
         # Define the exact order of how the JSON query is displayed
-        fields = ("course_id", "name", "duration", "teacher", "teacher_id", "enrolments")
+        fields = ("course_id", "name", "duration", "teacher_id", "teacher", "enrolments")
 
     # name: cannot be blank, starts with letter, allows letters/numbers/spaces
     name = auto_field(validate = [
