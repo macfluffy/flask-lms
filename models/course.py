@@ -16,7 +16,7 @@ class Course(db.Model):
     duration = db.Column(db.Float, nullable = False)
     
     # Foreign Key: Teacher
-    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.teacher_id"), nullable = False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.teacher_id"))
     
     # Define the relationship between teachers teaching courses, and student course enrolments
     teacher = db.relationship("Teacher", back_populates = "courses")

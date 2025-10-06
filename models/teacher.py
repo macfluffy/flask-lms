@@ -28,8 +28,8 @@ class Teacher(db.Model):
 
     # Define the relationship between teachers and the courses they are teaching
     # When a teacher leaves, the course can still continue to exist
+    # By default deleting a teacher, SQLAlchemy sets the teacher column to null
     courses = db.relationship(
         "Course", 
-        back_populates = "teacher", 
-        cascade = "all, set null"
+        back_populates = "teacher"
     )
