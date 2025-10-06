@@ -11,6 +11,7 @@ from init import db
 from models.student import Student
 from schemas.schemas import student_schema, students_schema
 
+
 # Create the Template Web Application Interface for student routes to be applied 
 # to the Flask application
 students_bp = Blueprint("students", __name__, url_prefix = "/students")
