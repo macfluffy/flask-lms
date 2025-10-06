@@ -118,9 +118,12 @@ def update_teacher(teacher_id):
             # fetch the info from the request body
             bodyData = request.get_json()
             # make the changes, short circuit method
-            teacher.name = bodyData.get("name", teacher.name)
+            teacher.first_name = bodyData.get("first_name", teacher.first_name)
+            teacher.last_name = bodyData.get("last_name", teacher.last_name)
             teacher.department = bodyData.get("department", teacher.department)
             teacher.address = bodyData.get("address", teacher.address)
+            teacher.phone = bodyData.get("phone", teacher.phone)
+            teacher.email = bodyData.get("email", teacher.email)
             # commit to the db
             db.session.commit()
             # ack
@@ -146,8 +149,8 @@ def delete_teacher(teacher_id):
         # commit
         db.session.commit()
         # return ack
-        return {"message": f"Teacher {teacher.name} deleted successfully."}, 200 
+        return {"message": f"Teacher {teacher.first_name} {teacher.last_name} has been deleted successfully."}, 200 
     # else
     else:
         # return ack
-        return {"message": f"Teacher with id: {teacher_id} does not exist."}, 404
+        return {"message": f"Teacher ID #{teacher_id} does not exist."}, 404

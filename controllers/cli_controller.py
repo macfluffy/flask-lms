@@ -34,13 +34,19 @@ def seed_tables():
     db.session.add_all(students)
 
     teachers = [Teacher(
-        name = "Teacher 1",
+        first_name = "Teacher",
+        last_name = "1",
         department = "Science",
-        address = "Sydney"
+        address = "Sydney",
+        phone = "0412345678",
+        email = "teacher1@email.com"
     ), Teacher(
-        name = "Teacher 2",
+        first_name = "Teacher",
+        last_name = "2",
         department = "Management",
-        address = "Brisbane"
+        address = "Brisbane",
+        phone = "98091234",
+        email = "teacher2@email.com"
     )]
 
     db.session.add_all(teachers)

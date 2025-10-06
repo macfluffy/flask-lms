@@ -50,10 +50,13 @@ class TeacherSchema(SQLAlchemyAutoSchema):
         # Define the exact order of how the JSON query is displayed
         fields = (
             "teacher_id", 
-            "name", 
+            "first_name", 
+            "last_name", 
             "department", 
             "courses", 
-            "address"
+            "address",
+            "phone",
+            "email"
         )
 
     # The valid department values: Science, Management, Engineering
@@ -136,7 +139,8 @@ class CourseSchema(SQLAlchemyAutoSchema):
         "TeacherSchema", 
         dump_only = True, 
         only = (
-            "name", 
+            "first_name", 
+            "last_name", 
             "department"
         )
     )
