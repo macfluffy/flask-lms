@@ -24,7 +24,7 @@ def get_students():
     students_list = db.session.scalars(stmt)
     # Serialise it
     queryData = students_schema.dump(students_list)
-    print("The name of the students:", {student["name"] for student in queryData})
+    print("The name of the students:", {student["first_name"] or student["last_name"] for student in queryData})
     if queryData:
         # Return the jsonify(list)
         return jsonify(queryData)
@@ -57,8 +57,10 @@ def create_student():
         
         # Create a student object with the request body data
         newStudent = Student(
-            name = bodyData.get("name"),
+            first_name = bodyData.get("first_name"),
+            last_name = bodyData.get("last_name"),
             email = bodyData.get("email"),
+            phone = bodyData.get("phone"),
             address = bodyData.get("address")
         )
         # Add to the session
@@ -94,11 +96,11 @@ def delete_student(student_id):
         # commit
         db.session.commit()
         # return ack
-        return {"message": f"Student {student.name} deleted successfully."}, 200 
+        return {"message": f"Student {student.first_name} {student.last_name} deleted successfully."}, 200 
     # else
     else:
         # return ack
-        return {"message": f"Student with id: {student_id} does not exist."}, 404
+        return {"message": f"Student ID #{student_id} does not exist."}, 404
 
 # PUT/PATCH /id
 @students_bp.route("/<int:student_id>", methods = ["PUT", "PATCH"])
@@ -114,8 +116,10 @@ def update_student(student_id):
             # fetch the info from the request body
             bodyData = request.get_json()
             # make the changes, short circuit method
-            student.name = bodyData.get("name", student.name)
+            student.first_name = bodyData.get("first_name", student.first_name)
+            student.last_name = bodyData.get("last_name", student.last_name)
             student.email = bodyData.get("email", student.email)
+            student.phone = bodyData.get("phone", student.phone)
             student.address = bodyData.get("address", student.address)
             # commit to the db
             db.session.commit()

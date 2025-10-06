@@ -22,12 +22,17 @@ def drop_tables():
 def seed_tables():
     # Create an instance of the model
     students = [Student(
-        name = "Alice",
+        first_name = "Alice",
+        last_name = "Son",
         email = "alice@email.com",
+        phone = "12345678",
         address = "Sydney"
     ), Student(
-        name = "Bob",
-        email = "bob@email.com"
+        first_name = "Bob",
+        last_name = "Aliceson",
+        email = "bob@email.com",
+        phone = "67891234",
+        address = "Brisbane"
     )]
 
     # Add to the session
