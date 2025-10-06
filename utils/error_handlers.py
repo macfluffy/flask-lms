@@ -11,7 +11,7 @@ from psycopg2 import errorcodes
 def register_error_handlers(app):
     @app.errorhandler(ValidationError)
     def handle_validation_error(err):
-        return jsonify(err)
+        return jsonify(err.messages), 404
     
     @app.errorhandler(IntegrityError)
     def handle_integrity_error(err):
