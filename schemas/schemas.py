@@ -16,16 +16,24 @@ from models.enrolment import Enrolment
 
 
 class StudentSchema(SQLAlchemyAutoSchema):
+    """
+    The student schema template. This organises the JSON response when fetching student
+    information such as their name, their contact details, and their enrolments to 
+    courses.
+    """
     class Meta:
         model = Student
         load_instance = True
 
         # Define the exact order of how the JSON query is displayed
+        # Name, Enrolments, Contact Details
         fields = (
             "student_id", 
-            "name", 
-            "email", 
+            "first_name", 
+            "last_name", 
             "enrolments", 
+            "email", 
+            "phone", 
             "address"
         )
     
@@ -38,16 +46,24 @@ class StudentSchema(SQLAlchemyAutoSchema):
         )
     )
 
+# Create instances of the schema for the controllers to call when applying validation,
+# error handling and restrictions
 student_schema = StudentSchema()
 students_schema = StudentSchema(many = True)
 
 
 class TeacherSchema(SQLAlchemyAutoSchema):
+    """
+    The teacher schema template. This organises the JSON response when fetching teacher
+    information such as their name, their contact details, the department they work in,
+    and the courses they teach.
+    """
     class Meta:
         model = Teacher
         load_instance = True
         
         # Define the exact order of how the JSON query is displayed
+        # Name, Department, Courses, Contact Details
         fields = (
             "teacher_id", 
             "first_name", 
@@ -81,17 +97,25 @@ class TeacherSchema(SQLAlchemyAutoSchema):
         )
     )
 
+# Create instances of the schema for the controllers to call when applying validation,
+# error handling and restrictions
 teacher_schema = TeacherSchema()
 teachers_schema = TeacherSchema(many = True)
 
 
 class CourseSchema(SQLAlchemyAutoSchema):
+    """
+    The course schema template. This organises the JSON response when fetching course
+    information such as the name of the course, how long the course will run for,
+    who will be teaching the course, and those who are enrolled in this course.
+    """
     class Meta:
         model = Course
         load_instance = True
         include_fk = True
         
         # Define the exact order of how the JSON query is displayed
+        # Name, Duration, Course Teacher, Student Enrolments
         fields = (
             "course_id", 
             "name", 
@@ -117,24 +141,13 @@ class CourseSchema(SQLAlchemyAutoSchema):
     )
 
     # Course duration has to be greater than 0
-    # Method 1: Use "validate" argument
-    # duration = auto_field(
-    #     validate = [
-    #         Range(
-    #             min = 1,
-    #             min_inclusive = 1,
-    #             error = "Duration must be greater or equal than 1."
-    #         )
-    #     ]
-    # )
-    # Method 2: Use @validate decorator
-    # @validates('property-to-validate')
-    # def fn_name(se;f, property-to-validate, data_key)
     @validates('duration')
     def validates_duration(self, duration, data_key):
         if duration <= 1:
             raise ValidationError("Duration can't be less than 1.")
 
+    # Only show the teacher's name and the department they work in
+    # when showing the teacher teaching this course
     teacher = fields.Nested(
         "TeacherSchema", 
         dump_only = True, 
@@ -154,17 +167,25 @@ class CourseSchema(SQLAlchemyAutoSchema):
         )
     )
 
+# Create instances of the schema for the controllers to call when applying validation,
+# error handling and restrictions
 course_schema = CourseSchema()
 courses_schema = CourseSchema(many = True)
 
 
 class EnrolmentSchema(SQLAlchemyAutoSchema):
+    """
+    The enrolment schema template. This organises the JSON response when fetching 
+    enrolment information such as when this enrolment was created, the enrolling 
+    student and the course they've enrolled in.
+    """
     class Meta:
         model = Enrolment
         load_instance = True
         include_fk = True
 
         # Define the exact order of how the JSON query is displayed
+        # Enrolment Date, Enrolling Student, Course Being Taken
         fields = (
             "id", 
             "enrolment_date", 
@@ -172,14 +193,19 @@ class EnrolmentSchema(SQLAlchemyAutoSchema):
             "course"
         )
 
+    # Only show the student's name when showing student information in
+    # the enrolment query
     student = fields.Nested(
         "StudentSchema", 
         only = (
             "student_id", 
-            "name"
+            "first_name",
+            "last_name",
         )
     )
 
+    # Only show the name of the course and how long it takes to complete
+    # in the enrolment query
     course = fields.Nested(
         "CourseSchema", 
         only = (
@@ -189,5 +215,7 @@ class EnrolmentSchema(SQLAlchemyAutoSchema):
         )
     )
 
+# Create instances of the schema for the controllers to call when applying validation,
+# error handling and restrictions
 enrolment_schema = EnrolmentSchema()
 enrolments_schema = EnrolmentSchema(many = True)

@@ -26,8 +26,10 @@ class Teacher(db.Model):
     phone = db.Column(db.String(100))
     email = db.Column(db.String(100))   
 
-    # Define the relationship between teachers and the courses they are teaching
-    # When a teacher leaves, the course can still continue to exist
+    """
+    Define the relationship between teachers and the courses they are teaching.
+    When a teacher leaves, the course can still continue to exist
+    """
     # By default deleting a teacher, SQLAlchemy sets the teacher column to null
     courses = db.relationship(
         "Course", 
