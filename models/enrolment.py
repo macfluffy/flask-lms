@@ -1,7 +1,6 @@
 """
-The enrolment table template contains the information about a student's
-enrolment in a course. Enrolments cannot exist without a student or a
-course.
+This file defines the model for the 'enrolments' junction table and it's relationships with
+'students' and the 'courses' models. 
 """
 
 # Built-in imports
@@ -11,9 +10,23 @@ from datetime import date
 from init import db
 
 class Enrolment(db.Model):
+    """
+    The enrolment table template contains the information about a student's
+    enrolment in a course. Enrolments cannot exist without either a student
+    or a course.
+    """
+
+    # Name of the table and what is referenced by Flask-SQLAlchemy methods
     __tablename__ = "enrolments"
+    
+    # Create a unique constraint that prevents duplicate enrolment entries of
+    # with the same student and course combination
     __table_args__ = (
-        db.UniqueConstraint("student_id", "course_id", name = "enrolments_unique_student_course"),
+        db.UniqueConstraint(
+            "student_id", 
+            "course_id", 
+            name = "enrolments_unique_student_course"
+        ),
     )
 
     # Table columns

@@ -16,7 +16,7 @@ def register_error_handlers(app):
     @app.errorhandler(IntegrityError)
     def handle_integrity_error(err):
         if hasattr(err, "orig") and err.orig:
-            # not null violation
+            # err.orig.pgcode 23502: Not Null Violation
             if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
                 return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
             
