@@ -66,14 +66,14 @@ CREATE USER lms_user WITH PASSWORD 'change-me';
 CREATE DATABASE lms_db OWNER lms_user;
 SQL
 ```
-> Replace 'change-me' with your own password. This one-liner runs the SQL inside psql automatically for easier setup.
+> ⚠️ Replace `'change-me'` with your own password. This one-liner runs the SQL inside psql automatically for easier setup.
 
 ### 5. Configure environment variables
 Create a `.env` file in the project root to store your database connection details:
 ```bash
 echo "DATABASE_URI=postgresql://lms_user:change-me@localhost:5432/lms_db" > .env
 ```
-> The `.env` file contains sensitive info and is already in `.gitignore`. Be sure to use your actual password.
+> ⚠️ Use your actual password here. The `.env` file contains sensitive info and is already in `.gitignore`.
 
 ### 6. Create and seed the database
 ```bash
