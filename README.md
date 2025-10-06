@@ -6,9 +6,18 @@ This project demonstrates how a lightweight student‑information system (SIS) c
 
 > **Disclaimer:** This project is provided as an educational exercise and is still in development. It is not production-ready and should not be used to manage real student data without further security and authentication features.
 
-## Quick Setup
 <details>
-<summary><b>Instructions</b></summary>
+<summary><b>Requirements</b></summary>
+
+## Requirements
+- Python 3.10 or higher
+- PostgreSQL 14 or higher (running locally)
+- pip / virtualenv for Python dependency management
+- Supported OS: macOS, Linux, Windows
+
+</details>
+
+## Quick Setup
 
 All commands below are copy-paste ready. Replace placeholder values such as `your-username` or passwords as needed.
 
@@ -69,8 +78,6 @@ flask db seed
 flask --app main run
 ```
 > The API defaults to `http://127.0.0.1:5000/`.
-
-</details>
 
 ## Background & rationale
 Many schools still rely on paper forms or disconnected spreadsheets, which leads to delays, duplicated effort, and high administrative workload. Moving to a centralised student‑information system reduces manual entry and makes daily tasks more efficient.
