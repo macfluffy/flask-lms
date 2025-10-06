@@ -1,5 +1,5 @@
-# Flask LMS
-Flask LMS is a RESTful API that centralises student, teacher, and course data for educational institutions.
+# Flask LMS – Learning Management System API
+Flask LMS (Learning Management System) is a RESTful API that centralises student, teacher, and course data for educational institutions.
 
 ## Overview
 This project demonstrates how a lightweight student‑information system (SIS) can be built using Flask blueprints, SQLAlchemy, and Marshmallow. It shows how schools moving off paper forms and spreadsheets could consolidate records behind a single source of truth and reduce duplicate data entry.
@@ -14,6 +14,7 @@ This project demonstrates how a lightweight student‑information system (SIS) c
 - PostgreSQL 14 or higher (running locally)
 - pip / virtualenv for Python dependency management
 - Supported OS: macOS, Linux, Windows
+All Python dependencies are listed in `requirements.txt` and installed in step 2.
 
 </details>
 
@@ -93,12 +94,12 @@ Research highlights the value of this shift:
 - **Policy/IT perspective:** As a policy maker, I want centralised student information so that schools can manage and share data more effectively.
 
 ## Features
-- RESTful CRUD endpoints for students, teachers, and courses with JSON responses.
-- Blueprint-based routing with Marshmallow schemas for clean serialization.
-- PostgreSQL persistence via SQLAlchemy models and relationships.
-- CLI helpers (`flask db create|drop|seed`) for rapid database lifecycle management.
-- Environment-based configuration using `.env` and `python-dotenv`.
-- Basic error handling for integrity violations and missing resources.
+- Quickly add, update, and view students, teachers, and courses to keep records consistent and enrolment faster.
+- Access information through a simple, structured interface that presents data clearly.
+- All records are safely stored in a central database so information is not lost or duplicated.
+- Easily set up or reset the system’s database with simple commands, ensuring information stays accurate and up-to-date.
+- Connection is handled through a simple .env file, making it easy to adjust without changing the code.
+- The system provides clear messages when something goes wrong, helping users understand and resolve issues.
 
 
 ## API Reference
