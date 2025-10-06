@@ -20,8 +20,11 @@ from utils.error_handlers import register_error_handlers
 
 load_dotenv()
 
-# Create a single instance of the Flask application which will be called from the rest of the code
 def create_app():
+    """
+    Create a single instance of the Flask application which will be called from
+    the rest of the code.
+    """
     app = Flask(__name__)
     print("Flask server started.")
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI") # requires load_dotenv()

@@ -130,7 +130,7 @@ class CourseSchema(SQLAlchemyAutoSchema):
     @validates('duration')
     def validates_duration(self, duration, data_key):
         if duration <= 1:
-            raise ValidationError("Duratiocan't be less than 1.")
+            raise ValidationError("Duration can't be less than 1.")
 
     teacher = fields.Nested(
         "TeacherSchema", 
