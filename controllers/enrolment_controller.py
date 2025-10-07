@@ -18,7 +18,7 @@ enrolments_bp = Blueprint("enrolments", __name__, url_prefix = "/enrolments")
 
 
 """
-Enrolment Controller Error Messages
+Enrolment Controller Messages
 """
 
 def error_empty_table():
@@ -75,12 +75,12 @@ def create_enrolment():
     Retrieve the body data and add the details of the enrolment into the enrolment database,
     this is the equivalent of POST in postgresql.
     """
-    # try:
     # Fetch the enrolment information from the request body
     bodyData = request.get_json()
 
     # Create a new enrolment object using the request body data and the enrolment schema
-    # will organise the data to their matching attributes
+    # will organise the data to their matching attributes with validation rules 
+    # implemented
     newEnrolment = Enrolment(
         enrolment_date = bodyData.get("enrolment_date"),
         student_id = bodyData.get("student_id"),

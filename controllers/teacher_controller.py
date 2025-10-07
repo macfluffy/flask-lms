@@ -1,13 +1,25 @@
-from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import IntegrityError
-from marshmallow import ValidationError
-from psycopg2 import errorcodes
+"""
+This file creates the Create, Read, Update, and Delete operations to the teacher data,
+through REST API design using Flask Blueprint.
+"""
 
+# Installed import packages
+from flask import Blueprint, jsonify, request
+
+# Local imports
 from init import db
 from models.teacher import Teacher
 from schemas.schemas import teacher_schema, teachers_schema
 
+
+# Create the Template Web Application Interface for teachers routes to be applied 
+# to the Flask application
 teachers_bp = Blueprint("teachers", __name__, url_prefix = "/teachers")
+
+
+"""
+Teacher Controller Messages
+"""
 
 def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}, 404
@@ -15,142 +27,155 @@ def error_empty_table():
 def error_teacher_does_not_exist(teacher_id):
     return {"message": f"Teacher with id {teacher_id} does not exist"}, 404
 
-# CREATE - POST /
+def teacher_successfully_removed(first_name, last_name):
+    return {"message": f"Teacher {first_name} {last_name} deleted successfully."}, 200 
+
+
+"""
+API Routes
+"""
+
 @teachers_bp.route("/", methods = ["POST"])
 def create_teacher():
-    try:
-        # GET details from the REQUEST body
-        bodyData = request.get_json()
-        # department = bodyData.get("department")
-        # stmt = db.select(Teacher).where(Teacher.department == department)
-        # teacher = db.session.scalar(stmt)
-        # data = teacher_schema.dump(teacher)
-        # if data:
-            # return {"message": f"The Teacher with department:{department} already exists."}, 409
-        
-        # Create a teacher object with the request body data
-        # newTeacher = Teacher(
-        #     name = bodyData.get("name"),
-        #     department = bodyData.get("department"),
-        #     address = bodyData.get("address")
-        # )
-        # schema.load() method to create the new teacher with validation rules implemented
-        newTeacher = teacher_schema.load(
-            bodyData,
-            session = db.session
-        )
+    """
+    Retrieve and read all the teachers from the teachers database,
+    this is the equivalent of GET in postgresql.
+    """
+    # Fetch the enrolment information from the request body
+    bodyData = request.get_json()
 
-        # Add to the session
+    # Create a new enrolment object using the request body data and the enrolment schema
+    # will organise the data to their matching attributes with validation rules 
+    # implemented
+    newTeacher = teacher_schema.load(
+        bodyData,
+        session = db.session
+    )
 
-        db.session.add(newTeacher)
-        # Commit the session
-        db.session.commit()
-        # Send acknowledgement
-        acknowledgement = teacher_schema.dump(newTeacher)
-        return jsonify(acknowledgement), 201
-    except ValidationError as err:
-        return err.messages, 400
-    except IntegrityError as err:
-        # if int(err.orig.pgcode) == 23502: # not null violation
-        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
-            return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
-        
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-            return {"message": err.orig.diag.message_detail}, 409
-        
-        else:
-            return  {"message": "Integrity Error occured."}, 409
-    except:
-        return {"message": "Unexpected error occured."}
+    # Add the new teacher information to the session
+    db.session.add(newTeacher)
+
+    # Commit and write the teacher data from this session into 
+    # the postgresql database
+    db.session.commit()
+    acknowledgement = teacher_schema.dump(newTeacher)
+    return jsonify(acknowledgement), 201
+
     
-# READ - GET / AND /id
 @teachers_bp.route("/")
 def get_teachers():
-    #Get the department name from the URL
+    """
+    Retrieve and read all the teachers from the teachers database,
+    this is the equivalent of GET in postgresql.
+    """
+    # Check for filter requests by department name from the URL
     department = request.args.get("department")
 
+    # Display teachers within the queried department
     if department:
-        # Define the statement for GET ALL teacher: select * from teachers where department = something;
-        stmt = db.select(Teacher).where(Teacher.department == department)
+        statement = db.select(Teacher).where(Teacher.department == department)
     else:    
-        # Define the statement for GET ALL teachers: SELECT * FROM teachers;
-        stmt = db.Select(Teacher)
+        # Select all teachers in the database
+        statement = db.Select(Teacher)
 
-    # Execute it
-    teachers_list = db.session.scalars(stmt)
+    # Serialise it as the scalar result is unserialised
+    teachers_list = db.session.scalars(statement)
     queryData = teachers_schema.dump(teachers_list)
-    # if it exists:
+
+    # Return the search results if there are teachers in the teacher database, 
+    # otherwise inform the user that the database is empty.
     if queryData:
-        # return it
+        # Return the list of teachers in JSON format
         return jsonify(queryData)
     # else:
     else:
-        # acknowledgement message
+        # Return an error message: Teachers table is empty
         return error_empty_table()
+
 
 @teachers_bp.route("/<int:teacher_id>")
 def get_a_teacher(teacher_id):
-    # Define the statement for GET ALL teachers: SELECT * FROM teachers WHERE id = teacher_id;
-    stmt = db.Select(Teacher).where(Teacher.teacher_id == teacher_id)
-    # Execute it
-    teachers_list = db.session.scalar(stmt)
+    """
+    Retrieve and read a specific teacher's information from 
+    the teacher database, using the teacher ID as the marker.
+    """
+    # Selects all the teachers from the database and filter the teacher with
+    # matching ID
+    statement = db.Select(Teacher).where(Teacher.teacher_id == teacher_id)
+    teachers_list = db.session.scalar(statement)
+
+    # Serialise it as the scalar result is unserialised
     queryData = teacher_schema.dump(teachers_list)
-    # if it exists:
+    
+    # Return the search results if this teachers is in the teacher database, 
+    # otherwise inform the user that this teacher does not exist.
     if queryData:
-        # return it
+        # Return the list of teachers in JSON format
         return jsonify(queryData)
     # else:
     else:
-        # acknowledgement message
+        # Return an error message: Teacher with this ID does not exist
         return error_teacher_does_not_exist(teacher_id)
 
-# UPDATE - PUT/PATCH /id
+
 @teachers_bp.route("/<int:teacher_id>", methods = ["PUT", "PATCH"])
 def update_teacher(teacher_id):
-    try:
-        # Get the teacher from the database
-        # define the stmt
-        stmt = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
-        # execute the statement
-        teacher = db.session.scalar(stmt)
-        # if the teacher exists
-        if teacher:
-            # fetch the info from the request body
-            bodyData = request.get_json()
-            # make the changes, short circuit method
-            teacher.first_name = bodyData.get("first_name", teacher.first_name)
-            teacher.last_name = bodyData.get("last_name", teacher.last_name)
-            teacher.department = bodyData.get("department", teacher.department)
-            teacher.address = bodyData.get("address", teacher.address)
-            teacher.phone = bodyData.get("phone", teacher.phone)
-            teacher.email = bodyData.get("email", teacher.email)
-            # commit to the db
-            db.session.commit()
-            # ack
-            return jsonify(teacher_schema.dump(teacher))
-        # else
-        else:
-            # ack message
-            return error_teacher_does_not_exist(teacher_id)
-    except IntegrityError as err:
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-            return {"message": err.orig.diag.message_detail}, 409
+    """
+    Retrieve the body data and update the details of the teacher with the 
+    matching ID in the teacher database, this is the equivalent of 
+    PUT/PATCH in postgresql.
+    """
+    # Selects all the teachers from the database and filter the teacher with
+    # matching ID
+    statement = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
+    teacher = db.session.scalar(statement)
+
+    # Update the teacher information in the teachers database if they exist
+    if teacher:
+        # Fetch the teacher information from the request body
+        bodyData = request.get_json()
+
+        # Update the teacher's details with these new changes, otherwise 
+        # reuse the same information
+        teacher.first_name = bodyData.get("first_name", teacher.first_name)
+        teacher.last_name = bodyData.get("last_name", teacher.last_name)
+        teacher.department = bodyData.get("department", teacher.department)
+        teacher.address = bodyData.get("address", teacher.address)
+        teacher.phone = bodyData.get("phone", teacher.phone)
+        teacher.email = bodyData.get("email", teacher.email)
+
+        # Commit and permanently update the teacher data in the 
+        # postgresql database
+        db.session.commit()
+
+        # Return the updated teacher info in JSON format
+        return jsonify(teacher_schema.dump(teacher))
+    else:
+        # Return an error message: Teacher with this ID does not exist
+        return error_teacher_does_not_exist(teacher_id)
+
         
-# DELETE - DELETE /id
 @teachers_bp.route("/<int:teacher_id>", methods = ["DELETE"])
 def delete_teacher(teacher_id):
-    # find the teacher with id
-    stmt = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
-    teacher = db.session.scalar(stmt)
-    # if teacher exists
+    """
+    Find the teacher with the matching ID in the teacher database and remove it.
+    This is the equivalent of DELETE in postgresql.
+    """
+    # Selects all the teachers from the database and filter the teacher with
+    # matching ID
+    statement = db.select(Teacher).where(Teacher.teacher_id == teacher_id)
+    teacher = db.session.scalar(statement)
+
+    # Delete the teacher from the teachers database if they exist
     if teacher:
-        # delete
+        # Remove the teacher from the session
         db.session.delete(teacher)
-        # commit
+        # Commit and permanently remove the teacher data from the 
+        # postgresql database
         db.session.commit()
-        # return ack
-        return {"message": f"Teacher {teacher.first_name} {teacher.last_name} has been deleted successfully."}, 200 
-    # else
+        
+        # Return an acknowledgement
+        return teacher_successfully_removed(teacher.first_name, teacher.last_name)
     else:
-        # return ack
-        return {"message": f"Teacher ID #{teacher_id} does not exist."}, 404
+        # Return an error message: Teacher with this ID does not exist
+        return error_teacher_does_not_exist(teacher_id)

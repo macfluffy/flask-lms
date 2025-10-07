@@ -18,7 +18,7 @@ students_bp = Blueprint("students", __name__, url_prefix = "/students")
 
 
 """
-Student Controller Error Messages
+Student Controller Messages
 """
 
 def error_empty_table():

@@ -18,7 +18,7 @@ courses_bp = Blueprint("courses", __name__, url_prefix = "/courses")
 
 
 """
-Course Controller Error Messages
+Course Controller Messages
 """
 
 def error_empty_table():
@@ -93,7 +93,8 @@ def create_course():
     bodyData = request.get_json()
     
     # Create a new course object using the request body data and the course schema
-    # will organise the data to their matching attributes
+    # will organise the data to their matching attributes with validation rules 
+    # implemented
     newCourse = course_schema.load(
         bodyData,
         session = db.session
@@ -156,7 +157,7 @@ def update_a_course(course_id):
 
     # Update the course information in the courses database using the request 
     # body data and the course schema will organise the data to their 
-    # matching attributes
+    # matching attributes with validation rules implemented
     course = course_schema.load(
         bodyData,
         instance = course,
