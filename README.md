@@ -1,4 +1,17 @@
 # 📚 Flask LMS – Learning Management System API
+
+## 📑 Table of Contents
+- [📝 Overview](#-overview)
+- [⚙️ Requirements](#-requirements)
+- [🚀 Quick Setup](#-quick-setup)
+- [🌍 Background & rationale](#-background--rationale)
+- [🎯 Target users & sample user stories](#-target-users--sample-user-stories)
+- [✨ Features](#-features)
+- [📡 API Reference](#-api-reference)
+- [🔒 Security & data considerations](#-security--data-considerations)
+- [🌟 Similar projects & inspiration](#-similar-projects--inspiration)
+- [📖 References](#-references)
+
 Flask LMS (Learning Management System) is a RESTful API that centralises student, teacher, and course data for educational institutions.
 
 ## 📝 Overview
