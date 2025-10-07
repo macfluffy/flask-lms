@@ -1,12 +1,25 @@
-from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import IntegrityError
-from psycopg2 import errorcodes
+"""
+This file creates the Create, Read, Update, and Delete operations to the enrolment data,
+through REST API design using Flask Blueprint.
+"""
 
+# Installed import packages
+from flask import Blueprint, jsonify, request
+
+# Local imports
 from init import db
 from models.enrolment import Enrolment
 from schemas.schemas import enrolment_schema, enrolments_schema
 
+
+# Create the Template Web Application Interface for enrolments routes to be applied 
+# to the Flask application
 enrolments_bp = Blueprint("enrolments", __name__, url_prefix = "/enrolments")
+
+
+"""
+Enrolment Controller Error Messages
+"""
 
 def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}, 404
@@ -17,78 +30,97 @@ def error_enrolment_does_not_exist(enrolment_id):
 def enrolment_sucessfully_delete(enrolment_id):
     return {"message": f"Enrolment {enrolment_id} deleted successfully."}, 200 
 
-# Read all
+
+"""
+API Routes
+"""
+
 @enrolments_bp.route("/")
 def get_enrolments():
+    """
+    Retrieve and read all the enrolments from the enrolments database,
+    this is the equivalent of GET in postgresql.
+    """
+    # Select all the enrolments from the database and the students that
+    # are enrolled in these courses
     enrolment_id = request.args.get("enrolment_id", type = int)
     student_id = request.args.get("student_id", type = int)
-    stmt = db.select(Enrolment)
+    statement = db.select(Enrolment)
     
+    # Display enrolments that exist
     if enrolment_id:
-        stmt = stmt.where(Enrolment.id == enrolment_id)
+        statement = statement.where(Enrolment.id == enrolment_id)
     
+    # Display students that exist in the enrolment
     if student_id:
-        stmt = stmt.where(Enrolment.student_id == student_id)
-        # stmt = stmt.filter_by(Student.student_id == student_id)
+        statement = statement.where(Enrolment.student_id == student_id)
 
-    enrolments_list = db.session.scalars(stmt)
+    # Serialise it as the scalar result is unserialised
+    enrolments_list = db.session.scalars(statement)
     queryData = enrolments_schema.dump(enrolments_list)
+
+    # Return the search results if there are enrolments in the enrolment database, 
+    # otherwise inform the user that the database is empty.
     if queryData:
+        # Return the list of enrolments in JSON format
         return jsonify(queryData)
     else:
+        # Return an error message: Enrolments table is empty
         return error_empty_table()
-    
+
+
 @enrolments_bp.route("/", methods = ["POST"])
 def create_enrolment():
-    try:
-        # Get the data from the Request Body
-        bodyData = request.get_json()
-        # Create a enrolment instance
-        newEnrolment = Enrolment(
-            enrolment_date = bodyData.get("enrolment_date"),
-            student_id = bodyData.get("student_id"),
-            course_id = bodyData.get("course_id")
-        )
-        # Add to the session
-        db.session.add(newEnrolment)
-        # commit it
-        db.session.commit()
-        # return the response
-        return jsonify(enrolment_schema.dump(newEnrolment)), 201
-    except IntegrityError as err:
-        # if int(err.orig.pgcode) == 23502: # not null violation
-        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
-            return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
-        
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-            return {"message": err.orig.diag.message_detail}, 409
-        
-        if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-            return {"message": err.orig.diag.message_detail}, 409
-        
-        else:
-            return  {"message": "Integrity Error occured."}, 409
-    except:
-        return {"message": "Unexpected error occured."}, 400
+    """
+    Retrieve the body data and add the details of the enrolment into the enrolment database,
+    this is the equivalent of POST in postgresql.
+    """
+    # try:
+    # Fetch the enrolment information from the request body
+    bodyData = request.get_json()
+
+    # Create a new enrolment object using the request body data and the enrolment schema
+    # will organise the data to their matching attributes
+    newEnrolment = Enrolment(
+        enrolment_date = bodyData.get("enrolment_date"),
+        student_id = bodyData.get("student_id"),
+        course_id = bodyData.get("course_id")
+    )
     
-# DELETE a enrolment - DELETE /enrolment_id
+    # Add the enrolment data into the session
+    db.session.add(newEnrolment)
+    
+    # Commit and write the enrolment data from this session into 
+    # the postgresql database
+    db.session.commit()
+    return jsonify(enrolment_schema.dump(newEnrolment)), 201
+    
+
 @enrolments_bp.route("/<int:enrolment_id>", methods = ["DELETE"])
 def delete_enrolment(enrolment_id):
-    # Find the enrolment
-    # define the statement
-    stmt = db.select(Enrolment).where(Enrolment.id == enrolment_id)
-    # stmt = db.select(Enrolment).filter_by(enrolment_id = enrolment_id)
-    # execute it
-    enrolment = db.session.scalar(stmt)
+    """
+    Find the enrolment with the matching ID in the enrolment database and remove it.
+    This is the equivalent of DELETE in postgresql.
+    """
+    # Selects all the enrolments from the database and filter the enrolment with
+    # matching ID
+    statement = db.select(Enrolment).where(Enrolment.id == enrolment_id)
+    
+    # Serialise it as the scalar result is unserialised
+    enrolment = db.session.scalar(statement)
     queryData = enrolment_schema.dump(enrolment)
-    # If the enrolment exists
+
+    # Delete the enrolment from the enrolments database if they exist
     if queryData:
-        # delete it
+        # Remove the enrolment from the session
         db.session.delete(enrolment)
+        
+        # Commit and permanently remove the enrolment data from the 
+        # postgresql database
         db.session.commit()
-        # return message
+        
+        # Return an acknowledgement
         return enrolment_sucessfully_delete(enrolment_id)
-    # else
     else:
-        # acknowledge
+        # Return an error message: Enrolment with this ID does not exist
         return error_enrolment_does_not_exist(enrolment_id)
