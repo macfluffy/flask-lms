@@ -1,4 +1,17 @@
 # 📚 Flask LMS – Learning Management System API
+
+## 📑 Table of Contents
+- [📝 Overview](#-overview)
+- [⚙️ Requirements](#-requirements)
+- [🚀 Quick Setup](#-quick-setup)
+- [🌍 Background & rationale](#-background--rationale)
+- [🎯 Target users & sample user stories](#-target-users--sample-user-stories)
+- [✨ Features](#-features)
+- [📡 API Reference](#-api-reference)
+- [🔒 Security & data considerations](#-security--data-considerations)
+- [🌟 Similar projects & inspiration](#-similar-projects--inspiration)
+- [📖 References](#-references)
+
 Flask LMS (Learning Management System) is a RESTful API that centralises student, teacher, and course data for educational institutions.
 
 ## 📝 Overview
@@ -13,9 +26,9 @@ This project demonstrates how a lightweight student‑information system (SIS) c
 - Python 3.10 or higher
 - PostgreSQL 14 or higher (running locally)
 - pip / virtualenv for Python dependency management
-- Supported OS: macOS, Linux, Windows
+- Supported OS: macOS, Linux, Windows (⚠️ WSL required on Windows)
 
-All Python dependencies are listed in `requirements.txt` and installed in step 2.
+All Python dependencies are listed in `requirements.txt` and installed in step 3.
 
 </details>
 
@@ -35,31 +48,39 @@ cd flask-lms
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
 ```
-> macOS/Linux commands shown; see below for Windows virtual environment steps.
-#### Windows (PowerShell)
-```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
+> Commands are the same across macOS, Linux, and Windows (with small syntax differences shown below).
 
-### 3. Install PostgreSQL
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+> Installs all required Python packages.
+
+### 4. Install PostgreSQL
 Make sure PostgreSQL (version 14 or higher) is installed and running on your system.
 
-#### macOS (Homebrew)
+<details>
+<summary>🍏 macOS (Homebrew) – click to expand</summary>
+
 ```bash
 brew install postgresql
 brew services start postgresql
 ```
-> macOS only; see Windows installation steps below.
-#### Windows
-Download and install from the official PostgreSQL site: [https://www.postgresql.org/download/windows/](https://www.postgresql.org/download/windows/).
-Make sure the PostgreSQL service is running after installation.
+</details>
 
-### 4. Create the database and user
+<details>
+<summary>🪟 Windows (via WSL – required) – click to expand</summary>
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo -u postgres psql
+```
+> ⚠️ If you're using Windows, WSL (Windows Subsystem for Linux) is required for setup.
+</details>
+
+### 5. Create the database and user
 ```bash
 psql -U postgres <<'SQL'
 CREATE USER lms_user WITH PASSWORD 'change-me';
@@ -68,22 +89,21 @@ SQL
 ```
 > ⚠️ Replace `'change-me'` with your own password. This one-liner runs the SQL inside psql automatically for easier setup.
 
-### 5. Configure environment variables
+### 6. Configure environment variables
 Create a `.env` file in the project root to store your database connection details:
 ```bash
 echo "DATABASE_URI=postgresql://lms_user:change-me@localhost:5432/lms_db" > .env
 ```
 > ⚠️ Use your actual password here. The `.env` file contains sensitive info and is already in `.gitignore`.
 
-### 6. Create and seed the database
+### 7. Create and seed the database
 ```bash
 export FLASK_APP=main
 flask db create
 flask db seed
 ```
-> On Windows Command Prompt use `set FLASK_APP=main`; in PowerShell use `$env:FLASK_APP = "main"`.
 
-### 7. Start the development server
+### 8. Start the development server
 ```bash
 flask --app main run
 ```
@@ -122,7 +142,8 @@ Endpoints include:
 - **Authentication & authorisation:** Not implemented yet. A production deployment must add secure login and role-based access (e.g., admin, teacher, read-only) to protect records.
 - **Data protection (PII):** The system handles names, emails, and addresses. In production, traffic must use TLS (HTTPS) and at-rest protection (e.g., encrypted volumes, restricted DB access).
 - **Error handling:** Some endpoints currently return raw database error details. Replace with sanitised error responses and structured error codes in production.
-- **Secrets & configuration:** Database credentials live in `.env` (excluded from Git). Use strong, rotated passwords or managed secrets; never commit secrets to source control.
+- **Configuration & credentials:** Database credentials live in `.env` (excluded from Git). Use strong, rotated passwords or managed secrets; never commit secrets to source control.
+- **Data minimisation:** The API intentionally limits what information is returned (e.g., enrolment endpoints only expose student names, not sensitive details like addresses or emails) to reduce unnecessary exposure of personal data.
 
 ## 🌟 Similar projects & inspiration
 Large-scale systems such as [Moodle](https://moodle.org/), [Blackboard](https://www.anthology.com/blackboard), and [Canvas](https://www.instructure.com/canvas) are widely used by schools and universities to manage courses, enrolments, and student data.
