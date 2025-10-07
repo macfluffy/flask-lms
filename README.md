@@ -61,7 +61,7 @@ pip install -r requirements.txt
 Make sure PostgreSQL (version 14 or higher) is installed and running on your system.
 
 <details>
-<summary>macOS (Homebrew)</summary>
+<summary>🍏 macOS (Homebrew) – click to expand</summary>
 
 ```bash
 brew install postgresql
@@ -70,7 +70,7 @@ brew services start postgresql
 </details>
 
 <details>
-<summary>Windows (via WSL – required)</summary>
+<summary>🪟 Windows (via WSL – required) – click to expand</summary>
 
 ```bash
 sudo apt update
@@ -142,7 +142,8 @@ Endpoints include:
 - **Authentication & authorisation:** Not implemented yet. A production deployment must add secure login and role-based access (e.g., admin, teacher, read-only) to protect records.
 - **Data protection (PII):** The system handles names, emails, and addresses. In production, traffic must use TLS (HTTPS) and at-rest protection (e.g., encrypted volumes, restricted DB access).
 - **Error handling:** Some endpoints currently return raw database error details. Replace with sanitised error responses and structured error codes in production.
-- **Secrets & configuration:** Database credentials live in `.env` (excluded from Git). Use strong, rotated passwords or managed secrets; never commit secrets to source control.
+- **Configuration & credentials:** Database credentials live in `.env` (excluded from Git). Use strong, rotated passwords or managed secrets; never commit secrets to source control.
+- **Data minimisation:** The API intentionally limits what information is returned (e.g., enrolment endpoints only expose student names, not sensitive details like addresses or emails) to reduce unnecessary exposure of personal data.
 
 ## 🌟 Similar projects & inspiration
 Large-scale systems such as [Moodle](https://moodle.org/), [Blackboard](https://www.anthology.com/blackboard), and [Canvas](https://www.instructure.com/canvas) are widely used by schools and universities to manage courses, enrolments, and student data.
