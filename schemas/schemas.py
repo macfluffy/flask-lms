@@ -87,6 +87,7 @@ class TeacherSchema(SQLAlchemyAutoSchema):
         )
     )
     # Exclude teachers to prevent reference recursion when displaying the course information
+    # that this teacher teaches
     courses = fields.List(
         fields.Nested(
             "CourseSchema", 

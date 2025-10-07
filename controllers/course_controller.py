@@ -1,13 +1,25 @@
-from flask import Blueprint, jsonify, request
-from sqlalchemy.exc import IntegrityError, DataError
-from marshmallow import ValidationError
-from psycopg2 import errorcodes
+"""
+This file creates the Create, Read, Update, and Delete operations to the course data,
+through REST API design using Flask Blueprint.
+"""
 
+# Installed import packages
+from flask import Blueprint, jsonify, request
+
+# Local imports
 from init import db
 from models.course import Course
 from schemas.schemas import course_schema, courses_schema
 
+
+# Create the Template Web Application Interface for course routes to be applied 
+# to the Flask application
 courses_bp = Blueprint("courses", __name__, url_prefix = "/courses")
+
+
+"""
+Course Controller Error Messages
+"""
 
 def error_empty_table():
     return {"message": "No records found. Add a statement to get started."}, 404
@@ -18,199 +30,142 @@ def error_course_does_not_exist(course_id):
 def course_sucessfully_delete(course_name):
     return {"message": f"Course {course_name} deleted successfully."}, 200 
 
-# READ - GET /
+
+"""
+API Routes
+"""
+
 @courses_bp.route("/")
 def get_courses():
-    # Define the statement
-    stmt = db.select(Course)
-    # Execute it
-    courses_lists = db.session.scalars(stmt)
-    # Serialise it
+    """
+    Retrieve and read all the courses from the course database,
+    this is the equivalent of GET in postgresql.
+    """
+    # Selects all the courses from the database
+    statement = db.select(Course)
+    courses_lists = db.session.scalars(statement)
+    
+    # Serialise it as the scalar result is unserialised
     queryData = courses_schema.dump(courses_lists)
-    # If it exists:
+    
+    # Return the search results if there are courses in the course database, 
+    # otherwise inform the user that the database is empty.
     if queryData:
-        # Return it
+        # Return the list of courses in JSON format
         return jsonify(queryData)
-    # Else:
     else:
-        #Acknowledge
+        # Return an error message: Course table is empty
         return error_empty_table()
 
-# READ a course - GET /course_id
+
 @courses_bp.route("/<int:course_id>")
 def get_a_course(course_id):
-    # Define the statement
-    # SQL: SELECT * FROM courses WHERE course_id = course_id;
-    stmt = db.select(Course).where(Course.course_id == course_id)
-    # execute it
-    course = db.session.scalar(stmt)
-    # serialise it
+    """
+    Retrieve and read a specific course's information from 
+    the course database, using the course ID as the marker.
+    """
+    # Selects all the courses from the database and filter the course with
+    # matching ID
+    statement = db.select(Course).where(Course.course_id == course_id)
+    course = db.session.scalar(statement)
+    
+    # Serialise it as the scalar result is unserialised
     queryData = course_schema.dump(course)
-    # if the course exists
+    
+    # Return the search results if this courses is in the course database, 
+    # otherwise inform the user that this course does not exist.
     if queryData:
-        # return it
+        # Return the course info in JSON format
         return jsonify(queryData)
     # else
     else:
-        # acknowledge
+        # Return an error message: Course with this ID does not exist
         return error_course_does_not_exist(course_id)
     
-# CREATE - POST /
+
 @courses_bp.route("/", methods = ["POST"])
 def create_course():
-    # try:
-    #     # Get the data from the Request Body
-    #     # bodyData = request.get_json()
-    #     # # Create a course instance
-    #     # newCourse = Course(
-    #     #     name = bodyData.get("name"),
-    #     #     duration = bodyData.get("duration"),
-    #     #     teacher_id = bodyData.get("teacher_id")
-    #     # )
-    #     # # Add to the session
-    #     # db.session.add(newCourse)
-        
-    #     # schema.dump approach
-    #     # Use the Marshmallow to validate + create the course
-    #     newCourse = course_schema.load(
-    #         request.get_json(),
-    #         session = db.session
-    #     )
-    #     db.session.add(newCourse)
-    #     # commit it
-    #     db.session.commit()
-    #     # return the response
-    #     return jsonify(course_schema.dump(newCourse)), 201
-    # except ValidationError as err:
-    #     return err.messages, 400
-    # except IntegrityError as err:
-    #     # if int(err.orig.pgcode) == 23502: # not null violation
-    #     if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION: # not null violation
-    #         return {"message": f"Required field: {err.orig.diag.column_name} cannot be null."}, 409
-        
-    #     if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-    #         return {"message": err.orig.diag.message_detail}, 409
-        
-    #     if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-    #         return {"message": "Invalid teacher selected."}, 409
-        
-    #     else:
-    #         return  {"message": "Integrity Error occured."}, 409
-    # except:
-    #     return {"message": "Unexpected error occured."}, 400
-    # Implement Global Error Handlers
-    # Get the request body data values
+    """
+    Retrieve the body data and add the details of the course into the course database,
+    this is the equivalent of POST in postgresql.
+    """
+    # Fetch the course information from the request body
     bodyData = request.get_json()
-    # Validate and create a course
+    
+    # Create a new course object using the request body data and the course schema
+    # will organise the data to their matching attributes
     newCourse = course_schema.load(
         bodyData,
         session = db.session
     )
-    # Add to session
+    
+    # Add the course data into the session
     db.session.add(newCourse)
-    # commit it
+
+    # Commit and write the course data from this session into 
+    # the postgresql database
     db.session.commit()
-    # return the response
     return jsonify(course_schema.dump(newCourse)), 201
 
-# DELETE a course - DELETE /course_id
+
 @courses_bp.route("/<int:course_id>", methods = ["DELETE"])
 def delete_course(course_id):
-    # Find the course
-    # define the statement
-    stmt = db.select(Course).where(Course.course_id == course_id)
-    # stmt = db.select(Course).filter_by(course_id = course_id)
-    # execute it
-    course = db.session.scalar(stmt)
+    """
+    Find the course with the matching ID in the course database and remove it.
+    This is the equivalent of DELETE in postgresql.
+    """
+    # Selects all the courses from the database and filter the course with
+    # matching ID
+    statement = db.select(Course).where(Course.course_id == course_id)
+    course = db.session.scalar(statement)
     queryData = course_schema.dump(course)
-    # If the course exists
+
+    # Delete the course from the courses database if they exist
     if queryData:
-        # delete it
+        # Remove the course from the session
         db.session.delete(course)
+
+        # Commit and permanently remove the course data from the 
+        # postgresql database
         db.session.commit()
-        # return message
+        
+        # Return an acknowledgement
         return course_sucessfully_delete(course.name)
-    # else
     else:
-        # acknowledge
+        # Return an error message: Course with this ID does not exist
         return error_course_does_not_exist(course_id)
     
-# UPDATE - PUT/PATCH /course_id
-courses_bp.route("/<int:course_id", methods = ["PUT", "PATCH"])
+
+@courses_bp.route("/<int:course_id>", methods = ["PUT", "PATCH"])
 def update_a_course(course_id):
-    # Find the course from the database
+    """
+    Retrieve the body data and update the details of the course with the 
+    matching ID in the course database, this is the equivalent of 
+    PUT/PATCH in postgresql.
+    """
+    # Selects all the courses from the database and filter the course with
+    # matching ID
     course = db.session.get(Course, course_id)
-    # if the course doesn't exist return an error message
+
+    # Notify the user if the course doesn't exist in the database
     if not course:
         return error_course_does_not_exist(course_id)
-    
-    try:
-        # Get the values to be updated from the request body
-        bodyData = request.get_json()
-        # Update the values
-        course = course_schema.load(
-            bodyData,
-            instance = course,
-            session = db.session,
-            partial = True
-        )
-        # commit
-        db.session.commit()
-        # return
-        return course_schema.dump(course), 200
-    
-    except ValidationError as err:
-        return err.messages, 400
-    
-    except IntegrityError as err:
-        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-            return {"message": err.orig.diag.message_detail}, 409
-        
-        if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-            return {"message": "Invalid teacher selected."}, 409
-        
-        else:
-            return  {"message": "Integrity Error occured."}, 409
-    
-    except DataError as err:
-        return {"message": err.orig.pgcode == errorcodes.orig.diag.message_detail}, 409
-    
-    except:
-        return {"message": "Unexpected error occured."}, 400
-    
-# def update_a_course(course_id):
-#     try:
-#         # Find the course from the db
-#         stmt = db.select(Course).where(Course.course_id == course_id)
-#         course = db.session.scalar(stmt)
-#         queryData = course_schema.dump(course)
-#         # if it exists:
-#         if queryData:
-#             # get the data to update from the request body
-#             bodyData = request.get_json()
-#             # make the changes
-#             course.name = bodyData.get("name", course.name)
-#             course.duration = bodyData.get("duration", course.duration)
-#             course.teacher_id = bodyData.get("teacher_id", course.teacher_id)
-#             # commit
-#             db.session.commit()
-#             # return response
-#             return jsonify(course_schema.dump(course))
-#         # else
-#         else:
-#             # acknowledge
-#             return error_course_does_not_exist(course_id)
-#     except IntegrityError as err:
-#         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION: # unique violation
-#             return {"message": err.orig.diag.message_detail}, 409
-        
-#         if err.orig.pgcode == errorcodes.FOREIGN_KEY_VIOLATION: # foreign key violation
-#             return {"message": "Invalid teacher selected."}, 409
-        
-#         else:
-#             return  {"message": "Integrity Error occured."}, 409
-#     except DataError as err:
-#         return {"message": err.orig.pgcode == errorcodes.orig.diag.message_detail}, 409
-#     except:
-#         return {"message": "Unexpected error occured."}, 400
-    
+
+    # Get the values to be updated from the request body
+    bodyData = request.get_json()
+
+    # Update the course information in the courses database using the request 
+    # body data and the course schema will organise the data to their 
+    # matching attributes
+    course = course_schema.load(
+        bodyData,
+        instance = course,
+        session = db.session,
+        partial = True
+    )
+
+    # Commit and write the course data from this session into 
+    # the postgresql database
+    queryData = course_schema.dump(course)
+    db.session.commit()
+    return jsonify(queryData), 200

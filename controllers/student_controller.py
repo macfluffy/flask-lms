@@ -41,7 +41,7 @@ def get_students():
     Retrieve and read all the students from the student database,
     this is the equivalent of GET in postgresql.
     """
-    # Selects all the sudents from the database
+    # Selects all the students from the database
     statement = db.select(Student)
     students_list = db.session.scalars(statement)
 
@@ -51,7 +51,7 @@ def get_students():
     # Return the search results if there are students in the student database, 
     # otherwise inform the user that the database is empty.
     if queryData:
-        # Return the list of students as a JSON object
+        # Return the list of students in JSON format
         return jsonify(queryData)
     else:
         # Return an error message: Student table is empty
@@ -64,7 +64,7 @@ def get_a_student(student_id):
     Retrieve and read a specific student's information from 
     the student database, using the student ID as the marker.
     """
-    # Selects all the sudents from the database and filter the student with
+    # Selects all the students from the database and filter the student with
     # matching ID
     statement = db.select(Student).where(Student.student_id == student_id)
     student = db.session.scalar(statement)
@@ -72,10 +72,10 @@ def get_a_student(student_id):
     # Serialise it as the scalar result is unserialised
     queryData = student_schema.dump(student)
 
-    # Return the search results if there are students in the student database, 
-    # otherwise inform the user that the database is empty.
+    # Return the search results if this student is in the student database, 
+    # otherwise inform the user that the student does not exist.
     if queryData:
-        # Return the student info as a JSON
+        # Return the student info in JSON format
         return jsonify(queryData)
     else:
         # Return an error message: Student with this ID does not exist
@@ -118,7 +118,7 @@ def delete_student(student_id):
     Find the student with the matching ID in the student database and remove them.
     This is the equivalent of DELETE in postgresql.
     """
-    # Selects all the sudents from the database and filter the student with
+    # Selects all the students from the database and filter the student with
     # matching ID
     statement = db.select(Student).where(Student.student_id == student_id)
     student = db.session.scalar(statement)
@@ -145,7 +145,7 @@ def update_student(student_id):
     matching ID in the student database, this is the equivalent of 
     PUT/PATCH in postgresql.
     """
-    # Selects all the sudents from the database and filter the student with
+    # Selects all the students from the database and filter the student with
     # matching ID
     statement = db.select(Student).where(Student.student_id == student_id)
     student = db.session.scalar(statement)
@@ -167,7 +167,7 @@ def update_student(student_id):
         # postgresql database
         db.session.commit()
 
-        # Return the updated student info as a JSON
+        # Return the updated student info in JSON format
         return jsonify(student_schema.dump(student))
     else:
         # Return an error message: Student with this ID does not exist
